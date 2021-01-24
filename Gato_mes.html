@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Gato del mes </title>
+</head>
+<body>
+	
+	<style > img{height: 200px; width:200px; border:2px solid  black; }
+		
+	</style>
+	Gato del mes <input id="namebox"  text="text"><br><br>
+	<img id="myimg"> <label id="UpProgress"></label><br><br>
+<button id="select">seleccionar imagen</button>
+<button id="upload">cargar imagen</button>
+<button id="retrieve">imagen</button>
+
+
+<!--------------------------FIRBASE LIBRARIES-------------------------------------------------->
+<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-app.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-auth.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-database.js"></script> 
+
+<script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-storage.js"></script> 
+
+
+		
+<script id="MainScript">
+
+var ImgName , ImgUrl ;
+var files = [];
+var reader;
+
+
+var firebaseConfig = {
+    apiKey: "AIzaSyBQBkYUdxvxV6ip-Tg-b2CNh6m6JX6EExg",
+    authDomain: "gats-6d8c3.firebaseapp.com",
+    projectId: "gats-6d8c3",
+    storageBucket: "gats-6d8c3.appspot.com",
+    messagingSenderId: "939241072699",
+    appId: "1:939241072699:web:a4d7977b955334215bd41e"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig); 
+  // Initialize Firebase
+
+
+document.getElementById("select").onclick=function(e){
+ 
+      var input = document.createElement('input');
+      input.type= 'file';
+     
+      input.onchange = e =>{
+      	files= e.target.files;
+      	reader= new FileReader();
+      	reader.onload = function(){
+      		document.getElementById("myimg").src = reader.result;
+      	}
+      	reader.readAsDataURL(files[0]);
+
+      }
+      input.click();
+       
+}
+
+document.getElementById('upload').onclick=function(){
+	ImgName = document.getElementById('namebox').value;
+	var uploadTask = firebase.storage().ref('Images/'+ImgName+".png").put(files[0]);
+	
+	uploadTask.on('state_changed', function(snapshot){
+
+		var progress = (snapshot.bytesTransferred / snapshot.totalBytes)* 100;
+		document.getElementById('UpProgress').innerHTML = 'Upload'+ progress+'%'; 
+
+   
+	},
+	function(error){
+        alert('error')
+
+	},
+	function(){
+		uploadTask.snapshot.ref.getDownloadURL().then(function(url){
+                 ImgUrl= url;
+
+		firebase.database().ref('Pictures/'+ImgName).set({
+			Name:ImgName,
+			Link: ImgUrl
+
+		});
+		alert('El gato a sido cargado a firebase')
+	}
+
+	);
+	});
+}
+ 
+ document.getElementById('retrieve').onclick=function(){
+
+ 	ImgName=document.getElementById('namebox').value;
+ 	firebase.database().ref('Pictures/'+ImgName).on('value',function(snapshot){
+ 		document.getElementById('myimg').src = snapshot.val().Link;
+ 
+ 	});
+
+
+ }
+
+
+	</script>
+
+
+<br>
+	<br>
+	<br>
+	<br>
+
+	<a href="index.html">Regresar</a>
+
+</body>
+
+
+</html>
